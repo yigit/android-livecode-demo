@@ -6,9 +6,11 @@ import android.util.Log;
 
 import com.birbit.android.livecode.twitter.Config;
 import com.birbit.android.livecode.twitter.business.exceptions.TwitterApiException;
+import com.birbit.android.livecode.twitter.util.L;
 import com.birbit.android.livecode.twitter.vo.Tweet;
 import com.google.gson.Gson;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -35,7 +37,12 @@ import retrofit.client.OkClient;
 import retrofit.client.Request;
 import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
+import retrofit.http.Field;
+import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
+import retrofit.http.POST;
+import retrofit.mime.TypedByteArray;
+import retrofit.mime.TypedOutput;
 
 /**
  * Created by yigit on 2/1/14.
@@ -46,7 +53,7 @@ public class TwitterApiClient {
 
     public TwitterApiClient() {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("https://api.twitter.com/1.1")
+                .setEndpoint(Config.API_BASE)
                 .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setConverter(new GsonConverter(new Gson()))
                 .setClient(new WrapperClient())
@@ -67,6 +74,9 @@ public class TwitterApiClient {
     public interface TwitterService {
         @GET("/statuses/home_timeline.json")
         public List<Tweet> homeTimeline();
+        @FormUrlEncoded
+        @POST("/statuses/update.json")
+        public Tweet postStatus(@Field("status") String status);
     }
 
     private static class WrapperClient implements Client {
@@ -102,6 +112,22 @@ public class TwitterApiClient {
             Uri uri = Uri.parse(request.getUrl());
             for(String queryParam : uri.getQueryParameterNames()) {
                 signaturePairs.put(percentEncode(queryParam), percentEncode(uri.getQueryParameter(queryParam)));
+            }
+            if("POST".equals(request.getMethod().toUpperCase())) {
+                TypedOutput output = request.getBody();
+                if(output instanceof TypedByteArray) {
+                    ByteArrayOutputStream os = new ByteArrayOutputStream();
+                    output.writeTo(os);
+                    String val = os.toString("UTF-8");
+                    if(val.length() > 0) {
+                        Uri bodyUri = Uri.parse(Config.API_BASE + "/?" + val);
+                        for(String param : bodyUri.getQueryParameterNames()) {
+                            signaturePairs.put(percentEncode(param), percentEncode(bodyUri.getQueryParameter(param)));
+                        }
+                    }
+                    //ugly ugly
+                    L.d(val);
+                }
             }
             StringBuilder signatureBuilder = new StringBuilder();
             boolean first = true;

@@ -1,6 +1,7 @@
 package com.birbit.android.livecode.twitter;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,7 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.birbit.android.livecode.twitter.vo.Tweet;
@@ -25,8 +29,49 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_main);
-        tweetList = ((ListView) findViewById(R.id.tweet_list));
+        initUI();
         loadTweets();
+    }
+
+    private void initUI() {
+        tweetList = ((ListView) findViewById(R.id.tweet_list));
+        findViewById(R.id.send_tweet_button).setOnClickListener(onSendTweetClick);
+    }
+
+    private View.OnClickListener onSendTweetClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            EditText sendTextView = (EditText) findViewById(R.id.send_tweet_text);
+            String trimmed = sendTextView.getText().toString().trim();
+            if(trimmed.length() == 0) {
+                return;
+            }
+            if(trimmed.length() > 140) {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setMessage(R.string.error_too_long)
+                        .show();
+                return;
+            }
+            sendTextView.setText("");
+            sendTweet(trimmed);
+        }
+    };
+
+    private void sendTweet(String trimmed) {
+        new AsyncTask<String, Void, Tweet>() {
+
+            @Override
+            protected Tweet doInBackground(String... params) {
+                return App.getInstance().getApiClient().getService().postStatus(params[0]);
+            }
+
+            @Override
+            protected void onPostExecute(Tweet tweet) {
+                super.onPostExecute(tweet);
+                //reload tweet
+                loadTweets();
+            }
+        }.execute(trimmed);
     }
 
     private void loadTweets() {
