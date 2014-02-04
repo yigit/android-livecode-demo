@@ -7,12 +7,14 @@ import android.util.Log;
 import com.birbit.android.livecode.twitter.Config;
 import com.birbit.android.livecode.twitter.business.exceptions.TwitterApiException;
 import com.birbit.android.livecode.twitter.util.L;
+import com.birbit.android.livecode.twitter.vo.DM;
 import com.birbit.android.livecode.twitter.vo.Tweet;
 import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -41,6 +43,7 @@ import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.POST;
+import retrofit.http.Path;
 import retrofit.mime.TypedByteArray;
 import retrofit.mime.TypedOutput;
 
@@ -77,6 +80,18 @@ public class TwitterApiClient {
         @FormUrlEncoded
         @POST("/statuses/update.json")
         public Tweet postStatus(@Field("status") String status);
+        @GET("/direct_messages.json")
+        public List<DM> getReceivedDMs(@Field("count") int limit);
+        @GET("/direct_messages.json")
+        public List<DM> getReceivedDMs(@Field("since_id") String sinceId, @Field("count") int limit);
+        @POST("/statuses/retweet/{id}.json")
+        public Tweet retweet(@Path("id") String tweetId);
+        @FormUrlEncoded
+        @POST("/favorites/create.json")
+        public Tweet favorite(@Field("id") String tweetId);
+        @FormUrlEncoded
+        @POST("/favorites/destroy.json")
+        public Tweet removeFavorite(@Field("id") String tweetId);
     }
 
     private static class WrapperClient implements Client {
@@ -184,14 +199,13 @@ public class TwitterApiClient {
             SecretKeySpec key = new SecretKeySpec((keyString).getBytes("UTF-8"), "HmacSHA1");
             Mac mac = Mac.getInstance("HmacSHA1");
             mac.init(key);
-
             byte[] bytes = mac.doFinal(s.getBytes("UTF-8"));
 
             return Base64.encodeToString(bytes, Base64.URL_SAFE);
         }
 
         private static String percentEncode(String val) throws UnsupportedEncodingException {
-            return URLEncoder.encode(val, "UTF-8");
+            return Uri.encode(val, "UTF-8");
         }
     }
 }

@@ -2,4 +2,9 @@
     <string name="app_name">LiveCode Twitter Client</string>
     <string name="error_too_long">Tweet cannot be longer than 140 characters</string>
     <string name="error_too_short">You need to type sth</string>
+    <string name="post_tweet">Post</string>
+    <string name="post_tweet_progress_msg">Posting Tweet</string>
+    <string name="re_tweet_progress_msg">Retweeting</string>
+    <string name="favorite_add_progress_msg">Adding Favorite</string>
+    <string name="favorite_remove_progress_msg">Removing Favorite</string>
 </resources>
