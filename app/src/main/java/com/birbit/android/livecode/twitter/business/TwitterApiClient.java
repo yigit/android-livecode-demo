@@ -44,6 +44,7 @@ import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
+import retrofit.http.Query;
 import retrofit.mime.TypedByteArray;
 import retrofit.mime.TypedOutput;
 
@@ -76,7 +77,7 @@ public class TwitterApiClient {
 
     public interface TwitterService {
         @GET("/statuses/home_timeline.json")
-        public List<Tweet> homeTimeline();
+        public List<Tweet> homeTimeline(@Query("since_id") String sinceId);
         @FormUrlEncoded
         @POST("/statuses/update.json")
         public Tweet postStatus(@Field("status") String status);
@@ -157,7 +158,8 @@ public class TwitterApiClient {
                 signatureBuilder.append(entry.getValue());
             }
             String finalSignatureBase = request.getMethod().toUpperCase() + "&" +
-                    percentEncode(request.getUrl()) + "&" + percentEncode(signatureBuilder.toString());
+                    percentEncode(uri.getScheme() + "://" + uri.getHost() + uri.getPath())
+                    + "&" + percentEncode(signatureBuilder.toString());
             String signingKey = percentEncode(Config.CONNECTION_CONFIGURATION.consumerSecret)
                     + "&" + percentEncode(Config.CONNECTION_CONFIGURATION.accessTokenSecret);
 

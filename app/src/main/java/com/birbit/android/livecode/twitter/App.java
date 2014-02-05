@@ -28,12 +28,16 @@ public class App extends Application {
         objectGraph = ObjectGraph.create(new AppModule());
         L.getConfig().setLoggingLevel(Log.VERBOSE);
         if(Config.ENABLE_STRICT_MODE) {
-            enableStrictModel();
+            //enableStrictModel();
         }
     }
 
     public static void injectMembers(Object object) {
         getInstance().objectGraph.inject(object);
+    }
+
+    public static <T>T get(Class<T> klass) {
+        return getInstance().objectGraph.get(klass);
     }
 
     private void enableStrictModel() {

@@ -1,7 +1,6 @@
 package com.birbit.android.livecode.twitter.activity;
 
 import android.app.AlertDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +11,18 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.birbit.android.livecode.twitter.App;
 import com.birbit.android.livecode.twitter.R;
 import com.birbit.android.livecode.twitter.business.TwitterApiClient;
+import com.birbit.android.livecode.twitter.model.TweetModel;
+import com.birbit.android.livecode.twitter.model.UserModel;
 import com.birbit.android.livecode.twitter.util.AsyncTaskWithProgress;
+import com.birbit.android.livecode.twitter.util.ModelUtils;
 import com.birbit.android.livecode.twitter.vo.Tweet;
+import com.birbit.android.livecode.twitter.vo.User;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -28,13 +32,22 @@ import javax.inject.Inject;
 public class MainActivity extends BaseActivity {
     private ListView tweetList;
     @Inject TwitterApiClient.TwitterService twitterService;
+    @Inject TweetModel tweetModel;
+    @Inject UserModel userModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_main);
         initUI();
-        loadTweets();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        reloadTweets();
+        fetchTweets();
     }
 
     private void initUI() {
@@ -64,20 +77,42 @@ public class MainActivity extends BaseActivity {
     private void sendTweet(final String trimmed) {
         new AsyncTaskWithProgress<Tweet>(this, R.string.post_tweet_progress_msg) {
             @Override
-            protected Tweet doInBackground(Void... params) {
+            protected Tweet safeDoInBackground(Void... params) {
                 return twitterService.postStatus(trimmed);
             }
 
             @Override
-            protected void onPostExecute(Tweet tweet) {
-                super.onPostExecute(tweet);
+            protected void safeOnPostExecute(Tweet tweet) {
                 //reload tweet
-                loadTweets();
+                reloadTweets();
             }
         }.execute();
     }
 
-    private void loadTweets() {
+    private void fetchTweets() {
+        new AsyncTaskWithProgress<Void>(this, null) {
+            @Override
+            protected Void safeDoInBackground(Void... params) {
+                //get top tweet
+                Tweet topTweeet = tweetModel.firstHomeTweet();
+                List<Tweet> tweets = twitterService.homeTimeline(topTweeet == null ? null : topTweeet.getId());
+                Map<String, User> users = new HashMap<String, User>();
+                for(Tweet tweet : tweets) {
+                    users.put(tweet.getUser().getId(), tweet.getUser());
+                }
+                tweetModel.saveTweets(tweets);
+                userModel.saveUsers(users.values());
+                return null;
+            }
+
+            @Override
+            protected void safeOnPostExecute(Void aVoid) {
+                reloadTweets();
+            }
+        }.execute();
+    }
+
+    private void reloadTweets() {
         new AsyncTaskWithProgress<List<Tweet>>(this, null) {
             @Override
             protected void onPreExecute() {
@@ -86,8 +121,10 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            protected List<Tweet> doInBackground(Void... params) {
-                return twitterService.homeTimeline();
+            protected List<Tweet> safeDoInBackground(Void... params) {
+                List<Tweet> tweets = tweetModel.homeTweets();
+                ModelUtils.cacheUIData(MainActivity.this, tweets);
+                return tweets;
             }
 
             @Override
@@ -97,8 +134,7 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            protected void onPostExecute(List<Tweet> tweets) {
-                super.onPostExecute(tweets);
+            protected void safeOnPostExecute(List<Tweet> tweets) {
                 setProgressBarIndeterminateVisibility(false);
                 tweetList.setAdapter(new TweetAdapter(tweets));
             }
@@ -140,7 +176,7 @@ public class MainActivity extends BaseActivity {
                 ? R.string.favorite_remove_progress_msg : R.string.favorite_add_progress_msg) {
 
                 @Override
-                protected Void doInBackground(Void... params) {
+                protected Void safeDoInBackground(Void... params) {
                     if(favorite) {
                         twitterService.favorite(tweet.getId());
                     } else {
@@ -151,8 +187,7 @@ public class MainActivity extends BaseActivity {
                 }
 
                 @Override
-                protected void onPostExecute(Void aVoid) {
-                    super.onPostExecute(aVoid);
+                protected void safeOnPostExecute(Void aVoid) {
                     notifyDataSetChanged();
                 }
             }.execute();
@@ -166,17 +201,16 @@ public class MainActivity extends BaseActivity {
             new AsyncTaskWithProgress<Void>(MainActivity.this, R.string.re_tweet_progress_msg) {
 
                 @Override
-                protected Void doInBackground(Void... params) {
+                protected Void safeDoInBackground(Void... params) {
                     twitterService.retweet(tweet.getId());
                     tweet.setRetweeted(true);
                     return null;
                 }
 
                 @Override
-                protected void onPostExecute(Void aVoid) {
-                    super.onPostExecute(aVoid);
+                protected void safeOnPostExecute(Void aVoid) {
                     notifyDataSetChanged();
-                    loadTweets();
+                    reloadTweets();
                 }
             }.execute();
 

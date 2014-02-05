@@ -1,6 +1,8 @@
 package com.birbit.android.livecode.twitter.util;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 
@@ -13,7 +15,8 @@ import com.birbit.android.livecode.twitter.activity.LifecycleProvider;
  */
 abstract public class AsyncTaskWithProgress<Result> extends AsyncTask<Void, Void, Result> implements LifecycleListener {
     private ProgressDialog progressDialog;
-    private LifecycleProvider lifecycleProvider;
+    private BaseActivity lifecycleProvider;
+    private Throwable runException;
 
     protected AsyncTaskWithProgress(BaseActivity context, int textId) {
         this(context, context.getResources().getString(textId));
@@ -43,12 +46,32 @@ abstract public class AsyncTaskWithProgress<Result> extends AsyncTask<Void, Void
     }
 
     @Override
-    protected void onPostExecute(Result result) {
+    final protected Result doInBackground(Void... params) {
+        try {
+            return safeDoInBackground(params);
+        } catch (Throwable t) {
+            runException = t;
+            L.e(runException, "exception in async task");
+        }
+        return null;
+    }
+
+    protected abstract Result safeDoInBackground(Void[] params);
+    protected abstract void safeOnPostExecute(Result result);
+
+    @Override
+    final protected void onPostExecute(Result result) {
         super.onPostExecute(result);
         if(progressDialog != null) {
             progressDialog.dismiss();
         }
+        final BaseActivity context = lifecycleProvider;
         cleanup();
+        if(runException == null) {
+            safeOnPostExecute(result);
+        } else if(context.isVisible()) {
+            new AlertDialog.Builder(context).setMessage(runException.getMessage()).show();
+        }
     }
 
     @Override

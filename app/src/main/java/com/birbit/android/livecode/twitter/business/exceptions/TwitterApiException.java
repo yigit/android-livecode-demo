@@ -14,6 +14,7 @@ import retrofit.RetrofitError;
 public class TwitterApiException extends RuntimeException {
     private final RetrofitError retrofitError;
     TwitterApiException(RetrofitError retrofitError) {
+        super(retrofitError.getMessage());
         setStackTrace(retrofitError.getStackTrace());
         this.retrofitError = retrofitError;
     }

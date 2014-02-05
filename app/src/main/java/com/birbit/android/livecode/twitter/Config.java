@@ -11,7 +11,7 @@ public class Config {
     public static final String API_BASE = "https://api.twitter.com/1.1";
     public static final long ARTIFICIAL_REQUEST_DELAY = TimeUnit.SECONDS.toMillis(1);//MS
     public static final boolean ENABLE_STRICT_MODE = true;
-    public static final ConnectionConfiguration CONNECTION_CONFIGURATION = ConnectionConfiguration.JOBQUEUE_TEST_APP;
+    public static final ConnectionConfiguration CONNECTION_CONFIGURATION = ConnectionConfiguration.LIVECODE_DEMO_1;
 
     public static enum ConnectionConfiguration {
         JOBQUEUE_TEST_APP("GfonALJ3wScsJfPsjLpl5g", "7EYvqptQeBQ9FFcbaPHv0WVe9rRbDi8dmX9DffIMIE",

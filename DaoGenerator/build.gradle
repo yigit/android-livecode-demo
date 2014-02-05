@@ -1,0 +1,34 @@
+apply plugin: 'java'
+apply plugin:'application'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.10'
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+
+dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
+    compile 'org.apache.commons:commons-lang3:3.1'
+    compile 'org.freemarker:freemarker:2.3.17'
+}
+sourceSets {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+}
+
+mainClassName = "com.birbit.TwitterDaoGenerator"
+//to generate classes: `gradle run`
