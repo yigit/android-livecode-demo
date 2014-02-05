@@ -14,7 +14,7 @@ import com.birbit.android.livecode.twitter.vo.Tweet;
 /**
  * DAO for table TWEET.
 */
-public class TweetDao extends AbstractDao<Tweet, String> {
+public class TweetDao extends AbstractDao<Tweet, Long> {
 
     public static final String TABLENAME = "TWEET";
 
@@ -23,12 +23,13 @@ public class TweetDao extends AbstractDao<Tweet, String> {
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id =new Property(0, String.class , "id", true, "id_str");
-        public final static Property Retweeted =new Property(1, Boolean.class , "retweeted", false, "RETWEETED");
-        public final static Property Text =new Property(2, String.class , "text", false, "TEXT");
-        public final static Property CreatedAt =new Property(3, java.util.Date.class , "createdAt", false, "CREATED_AT");
-        public final static Property UserId =new Property(4, String.class , "userId", false, "USER_ID");
-        public final static Property Favorited =new Property(5, Boolean.class , "favorited", false, "FAVORITED");
+        public final static Property LocalId =new Property(0, Long.class , "localId", true, "LOCAL_ID");
+        public final static Property Id =new Property(1, String.class , "id", false, "id_str");
+        public final static Property Retweeted =new Property(2, Boolean.class , "retweeted", false, "RETWEETED");
+        public final static Property Text =new Property(3, String.class , "text", false, "TEXT");
+        public final static Property CreatedAt =new Property(4, java.util.Date.class , "createdAt", false, "CREATED_AT");
+        public final static Property UserId =new Property(5, String.class , "userId", false, "USER_ID");
+        public final static Property Favorited =new Property(6, Boolean.class , "favorited", false, "FAVORITED");
     };
 
 
@@ -44,12 +45,13 @@ public class TweetDao extends AbstractDao<Tweet, String> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'TWEET' (" + //
-                "'id_str' TEXT PRIMARY KEY NOT NULL ," + // 0: id
-                "'RETWEETED' INTEGER," + // 1: retweeted
-                "'TEXT' TEXT," + // 2: text
-                "'CREATED_AT' INTEGER," + // 3: createdAt
-                "'USER_ID' TEXT," + // 4: userId
-                "'FAVORITED' INTEGER);"); // 5: favorited
+                "'LOCAL_ID' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: localId
+                "'id_str' TEXT UNIQUE ," + // 1: id
+                "'RETWEETED' INTEGER," + // 2: retweeted
+                "'TEXT' TEXT," + // 3: text
+                "'CREATED_AT' INTEGER," + // 4: createdAt
+                "'USER_ID' TEXT," + // 5: userId
+                "'FAVORITED' INTEGER);"); // 6: favorited
     }
 
     /** Drops the underlying database table. */
@@ -64,47 +66,53 @@ public class TweetDao extends AbstractDao<Tweet, String> {
         stmt.clearBindings();
         entity.onBeforeSave();
  
+        Long localId = entity.getLocalId();
+        if (localId != null) {
+            stmt.bindLong(1, localId);
+
+        }
+ 
         String id = entity.getId();
         if (id != null) {
-            stmt.bindString(1, id);
+            stmt.bindString(2, id);
 
         }
  
         Boolean retweeted = entity.getRetweeted();
         if (retweeted != null) {
-            stmt.bindLong(2, retweeted ? 1l: 0l);
+            stmt.bindLong(3, retweeted ? 1l: 0l);
 
         }
  
         String text = entity.getText();
         if (text != null) {
-            stmt.bindString(3, text);
+            stmt.bindString(4, text);
 
         }
  
         java.util.Date createdAt = entity.getCreatedAt();
         if (createdAt != null) {
-            stmt.bindLong(4, createdAt.getTime());
+            stmt.bindLong(5, createdAt.getTime());
 
         }
  
         String userId = entity.getUserId();
         if (userId != null) {
-            stmt.bindString(5, userId);
+            stmt.bindString(6, userId);
 
         }
  
         Boolean favorited = entity.getFavorited();
         if (favorited != null) {
-            stmt.bindLong(6, favorited ? 1l: 0l);
+            stmt.bindLong(7, favorited ? 1l: 0l);
 
         }
     }
 
     /** @inheritdoc */
     @Override
-    public String readKey(Cursor cursor, int offset) {
-        return cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0);
+    public Long readKey(Cursor cursor, int offset) {
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }
 
     /** @inheritdoc */
@@ -112,12 +120,13 @@ public class TweetDao extends AbstractDao<Tweet, String> {
     public Tweet readEntity(Cursor cursor, int offset) {
         Tweet entity = new Tweet( //
 
-            cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0) , // id
-            cursor.isNull(offset + 1) ? null : cursor.getShort(offset + 1) != 0 , // retweeted
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2) , // text
-            cursor.isNull(offset + 3) ? null : new java.util.Date( cursor.getLong(offset + 3) ) , // createdAt
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4) , // userId
-            cursor.isNull(offset + 5) ? null : cursor.getShort(offset + 5) != 0 // favorited
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0) , // localId
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1) , // id
+            cursor.isNull(offset + 2) ? null : cursor.getShort(offset + 2) != 0 , // retweeted
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) , // text
+            cursor.isNull(offset + 4) ? null : new java.util.Date( cursor.getLong(offset + 4) ) , // createdAt
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5) , // userId
+            cursor.isNull(offset + 6) ? null : cursor.getShort(offset + 6) != 0 // favorited
         );
         return entity;
     }
@@ -125,25 +134,27 @@ public class TweetDao extends AbstractDao<Tweet, String> {
     /** @inheritdoc */
     @Override
     public void readEntity(Cursor cursor, Tweet entity, int offset) {
-        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0) );
-        entity.setRetweeted(cursor.isNull(offset + 1) ? null : cursor.getShort(offset + 1) != 0 );
-        entity.setText(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2) );
-        entity.setCreatedAt(cursor.isNull(offset + 3) ? null : new java.util.Date( cursor.getLong(offset + 3) ) );
-        entity.setUserId(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4) );
-        entity.setFavorited(cursor.isNull(offset + 5) ? null : cursor.getShort(offset + 5) != 0 );
+        entity.setLocalId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0) );
+        entity.setId(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1) );
+        entity.setRetweeted(cursor.isNull(offset + 2) ? null : cursor.getShort(offset + 2) != 0 );
+        entity.setText(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) );
+        entity.setCreatedAt(cursor.isNull(offset + 4) ? null : new java.util.Date( cursor.getLong(offset + 4) ) );
+        entity.setUserId(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5) );
+        entity.setFavorited(cursor.isNull(offset + 6) ? null : cursor.getShort(offset + 6) != 0 );
      }
 
     /** @inheritdoc */
     @Override
-    protected String updateKeyAfterInsert(Tweet entity, long rowId) {
-        return entity.getId();
+    protected Long updateKeyAfterInsert(Tweet entity, long rowId) {
+        entity.setLocalId(rowId);
+        return rowId;
     }
 
     /** @inheritdoc */
     @Override
-    public String getKey(Tweet entity) {
+    public Long getKey(Tweet entity) {
         if(entity != null) {
-            return entity.getId();
+            return entity.getLocalId();
         } else {
             return null;
         }

@@ -14,6 +14,7 @@ package com.birbit.android.livecode.twitter.vo;
  */
 abstract public class TweetBase implements com.birbit.android.livecode.twitter.vo.CachesUIData {
 
+    protected Long localId;
     @com.google.gson.annotations.SerializedName( "id_str" )
     protected String id;
     @com.google.gson.annotations.SerializedName( "retweeted" )
@@ -32,17 +33,26 @@ abstract public class TweetBase implements com.birbit.android.livecode.twitter.v
     public TweetBase() {
     }
 
-    public TweetBase(String id) {
-        this.id = id;
+    public TweetBase(Long localId) {
+        this.localId = localId;
     }
 
-    public TweetBase(String id, Boolean retweeted, String text, java.util.Date createdAt, String userId, Boolean favorited) {
+    public TweetBase(Long localId, String id, Boolean retweeted, String text, java.util.Date createdAt, String userId, Boolean favorited) {
+        this.localId = localId;
         this.id = id;
         this.retweeted = retweeted;
         this.text = text;
         this.createdAt = createdAt;
         this.userId = userId;
         this.favorited = favorited;
+    }
+
+    public Long getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(Long localId) {
+        this.localId = localId;
     }
 
     public String getId() {
@@ -97,6 +107,11 @@ abstract public class TweetBase implements com.birbit.android.livecode.twitter.v
         if(this == other) {
             return;//both came from db, no need to run this.
         }
+
+        if(other.localId != null) {
+            this.localId = other.localId;
+        }
+
 
         if(other.id != null) {
             this.id = other.id;
