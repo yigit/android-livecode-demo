@@ -229,6 +229,7 @@ public class MainActivity extends BaseActivity {
         Tweet lastTweet;
 
         public ViewHolder(View view, Listener listener) {
+            view.setTag(this);
             root = view;
             this.listener = listener;
             textView = (TextView) view.findViewById(R.id.content);
