@@ -7,11 +7,20 @@ import com.birbit.android.livecode.twitter.App;
 import com.birbit.android.livecode.twitter.activity.MainActivity;
 import com.birbit.android.livecode.twitter.business.TwitterApiClient;
 import com.birbit.android.livecode.twitter.db.DbHelper;
+import com.birbit.android.livecode.twitter.job.MyJobManager;
+import com.birbit.android.livecode.twitter.job.SendTweetJob;
 import com.birbit.android.livecode.twitter.model.TweetModel;
 import com.birbit.android.livecode.twitter.model.UserModel;
 import com.birbit.android.livecode.twitter.vo.DaoMaster;
 import com.birbit.android.livecode.twitter.vo.DaoSession;
 import com.birbit.android.livecode.twitter.vo.UserDao;
+import com.google.common.eventbus.EventBus;
+import com.path.android.jobqueue.BaseJob;
+import com.path.android.jobqueue.JobManager;
+import com.path.android.jobqueue.config.Configuration;
+import com.path.android.jobqueue.di.DependencyInjector;
+
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -23,7 +32,9 @@ import dagger.Provides;
         injects = {
                 MainActivity.class,
                 TweetModel.class,
-                UserModel.class
+                UserModel.class,
+                EventBus.class,
+                SendTweetJob.class
         }
 )
 public class AppModule {
@@ -37,6 +48,18 @@ public class AppModule {
         return dbHelper.getDaoSession();
     }
 
+
+    @Provides
+    @Singleton
+    de.greenrobot.event.EventBus provideEventBus() {
+        return de.greenrobot.event.EventBus.getDefault();
+    }
+
+    @Provides
+    @Singleton
+    JobManager provideJobManager() {
+        return new MyJobManager(App.getInstance());
+    }
 
 
 }

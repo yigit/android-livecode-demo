@@ -13,12 +13,17 @@ import android.widget.TextView;
 
 import com.birbit.android.livecode.twitter.R;
 import com.birbit.android.livecode.twitter.business.TwitterApiClient;
+import com.birbit.android.livecode.twitter.event.DeletedTweetEvent;
+import com.birbit.android.livecode.twitter.event.NewTweetEvent;
+import com.birbit.android.livecode.twitter.event.UpdatedTweetEvent;
+import com.birbit.android.livecode.twitter.job.SendTweetJob;
 import com.birbit.android.livecode.twitter.model.TweetModel;
 import com.birbit.android.livecode.twitter.model.UserModel;
 import com.birbit.android.livecode.twitter.util.AsyncTaskWithProgress;
 import com.birbit.android.livecode.twitter.util.ModelUtils;
 import com.birbit.android.livecode.twitter.vo.Tweet;
 import com.birbit.android.livecode.twitter.vo.User;
+import com.path.android.jobqueue.JobManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +39,7 @@ public class MainActivity extends BaseActivity {
     @Inject TwitterApiClient.TwitterService twitterService;
     @Inject TweetModel tweetModel;
     @Inject UserModel userModel;
+    @Inject JobManager jobManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +54,17 @@ public class MainActivity extends BaseActivity {
         super.onStart();
         reloadTweets();
         fetchTweets();
+    }
+
+    public void onEventMainThread(NewTweetEvent ignored) {
+        reloadTweets();
+    }
+    public void onEventMainThread(DeletedTweetEvent ignored) {
+        reloadTweets();
+    }
+    public void onEventMainThread(UpdatedTweetEvent ignored) {
+        //TODO, instead find and update
+        reloadTweets();
     }
 
     private void initUI() {
@@ -75,20 +92,7 @@ public class MainActivity extends BaseActivity {
     };
 
     private void sendTweet(final String trimmed) {
-        new AsyncTaskWithProgress<Void>(this, R.string.post_tweet_progress_msg) {
-            @Override
-            protected Void safeDoInBackground(Void... params) {
-                Tweet tweet = twitterService.postStatus(trimmed);
-                tweetModel.saveTweet(tweet);
-                return null;
-            }
-
-            @Override
-            protected void safeOnPostExecute(Void res) {
-                //reload tweet
-                reloadTweets();
-            }
-        }.execute();
+        jobManager.addJob(new SendTweetJob(trimmed));
     }
 
     private void fetchTweets() {
@@ -242,10 +246,14 @@ public class MainActivity extends BaseActivity {
         public View render(Tweet tweet) {
             lastTweet = tweet;
             textView.setText(tweet.getUiSpanned());
-            retweetButton.setImageResource(
-                    tweet.isRetweeted() ? R.drawable.retweet : R.drawable.retweet_black);
-            favoriteButton.setImageResource(
-                    tweet.didFavorite() ? R.drawable.favorite_full : R.drawable.favorite_black);
+            if(tweet.isLocal()) {
+
+            } else {
+                retweetButton.setImageResource(
+                        tweet.isRetweeted() ? R.drawable.retweet : R.drawable.retweet_black);
+                favoriteButton.setImageResource(
+                        tweet.didFavorite() ? R.drawable.favorite_full : R.drawable.favorite_black);
+            }
             return root;
         }
 
