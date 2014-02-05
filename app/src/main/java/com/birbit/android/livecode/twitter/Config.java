@@ -17,7 +17,7 @@ public class Config {
         JOBQUEUE_TEST_APP("GfonALJ3wScsJfPsjLpl5g", "7EYvqptQeBQ9FFcbaPHv0WVe9rRbDi8dmX9DffIMIE",
                 "1443060589-h6JU83NsHMYx5M47Is2RzlVZmvHPbxQND9xT6KQ", "QLut9Mgwge5WptlVnCz9wxmbJrqBFNazkEYrGDZKYE"),
         JOBQUEUE_TEST_APP_2("APEGHy66BMYzvgEktDfc1Q","wf8XXYwivxHQtiIqPSD3lpq6po9JGRyYBIX0lT0",
-                "1443060589-ZW0lPmcN0NOwy2AchLjZjixHLhPXClYOPQ0IhWG","Tq8aVvT1PA6PXtKHgI5v1EL5UQj3JcGlFzXla2zethjYO"),
+                "1443060589-kYyfw38vXsQuZAwUFxmyXzDW4SIhTIK22sIL2r2","H1NGNScL7UVNRFILT3SUF3t087p7KCsbyPTZOEbJzY3hd"),
         LIVECODE_DEMO_1("wEIMoUSx5St3KOYx1NxPQ", "rHMma9V97DlgBt8G0hEwRo4yHs0QHPwjRLr9cC3cGNc",
                 "1443060589-DVRvnx1sUfqf73arhU8G7icabNlpVxWT9MaVN0t", "TGtukAgzNgNFTcaQlOfwqlpCFpu6h3fy8rwmcmfryJ1Bc")
         ;
