@@ -14,9 +14,19 @@ import retrofit.RetrofitError;
 public class TwitterApiException extends RuntimeException {
     private final RetrofitError retrofitError;
     TwitterApiException(RetrofitError retrofitError) {
-        super(retrofitError.getMessage());
+        super(createExceptionMessage(retrofitError));
         setStackTrace(retrofitError.getStackTrace());
         this.retrofitError = retrofitError;
+    }
+
+    private static String createExceptionMessage(RetrofitError retrofitError) {
+        if(retrofitError.getMessage() != null) {
+            return retrofitError.getMessage();
+        }
+        if(retrofitError.getResponse() != null) {
+            return "Status: "+ retrofitError.getResponse().getStatus();
+        }
+        return "unknown error";
     }
 
     public boolean canRetry() {

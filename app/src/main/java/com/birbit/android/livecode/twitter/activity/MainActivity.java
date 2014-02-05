@@ -75,14 +75,16 @@ public class MainActivity extends BaseActivity {
     };
 
     private void sendTweet(final String trimmed) {
-        new AsyncTaskWithProgress<Tweet>(this, R.string.post_tweet_progress_msg) {
+        new AsyncTaskWithProgress<Void>(this, R.string.post_tweet_progress_msg) {
             @Override
-            protected Tweet safeDoInBackground(Void... params) {
-                return twitterService.postStatus(trimmed);
+            protected Void safeDoInBackground(Void... params) {
+                Tweet tweet = twitterService.postStatus(trimmed);
+                tweetModel.saveTweet(tweet);
+                return null;
             }
 
             @Override
-            protected void safeOnPostExecute(Tweet tweet) {
+            protected void safeOnPostExecute(Void res) {
                 //reload tweet
                 reloadTweets();
             }
@@ -177,18 +179,19 @@ public class MainActivity extends BaseActivity {
 
                 @Override
                 protected Void safeDoInBackground(Void... params) {
+                    Tweet result;
                     if(favorite) {
-                        twitterService.favorite(tweet.getId());
+                        result = twitterService.favorite(tweet.getId());
                     } else {
-                        twitterService.removeFavorite(tweet.getId());
+                        result = twitterService.removeFavorite(tweet.getId());
                     }
-                    tweet.setFavorited(favorite);
+                    tweetModel.saveTweet(result);
                     return null;
                 }
 
                 @Override
                 protected void safeOnPostExecute(Void aVoid) {
-                    notifyDataSetChanged();
+                    reloadTweets();
                 }
             }.execute();
         }
@@ -202,14 +205,13 @@ public class MainActivity extends BaseActivity {
 
                 @Override
                 protected Void safeDoInBackground(Void... params) {
-                    twitterService.retweet(tweet.getId());
-                    tweet.setRetweeted(true);
+                    Tweet result = twitterService.retweet(tweet.getId());
+                    tweetModel.saveTweet(result);
                     return null;
                 }
 
                 @Override
                 protected void safeOnPostExecute(Void aVoid) {
-                    notifyDataSetChanged();
                     reloadTweets();
                 }
             }.execute();
