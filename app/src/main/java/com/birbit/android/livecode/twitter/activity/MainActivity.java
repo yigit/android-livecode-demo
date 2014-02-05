@@ -20,11 +20,14 @@ import com.birbit.android.livecode.twitter.vo.Tweet;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Created by yigit on 2/1/14.
  */
 public class MainActivity extends BaseActivity {
     private ListView tweetList;
+    @Inject TwitterApiClient.TwitterService twitterService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,12 +61,11 @@ public class MainActivity extends BaseActivity {
         }
     };
 
-    private void sendTweet(String trimmed) {
-        new AsyncTaskWithProgress<String, Void, Tweet>(this, R.string.post_tweet_progress_msg) {
-
+    private void sendTweet(final String trimmed) {
+        new AsyncTaskWithProgress<Tweet>(this, R.string.post_tweet_progress_msg) {
             @Override
-            protected Tweet doInBackground(String... params) {
-                return App.getInstance().getApiClient().getService().postStatus(params[0]);
+            protected Tweet doInBackground(Void... params) {
+                return twitterService.postStatus(trimmed);
             }
 
             @Override
@@ -72,11 +74,11 @@ public class MainActivity extends BaseActivity {
                 //reload tweet
                 loadTweets();
             }
-        }.execute(trimmed);
+        }.execute();
     }
 
     private void loadTweets() {
-        new AsyncTask<Void, Void, List<Tweet>>() {
+        new AsyncTaskWithProgress<List<Tweet>>(this, null) {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
@@ -85,7 +87,7 @@ public class MainActivity extends BaseActivity {
 
             @Override
             protected List<Tweet> doInBackground(Void... params) {
-                return App.getInstance().getApiClient().getService().homeTimeline();
+                return twitterService.homeTimeline();
             }
 
             @Override
@@ -134,16 +136,15 @@ public class MainActivity extends BaseActivity {
         @Override
         public void onFavorite(final Tweet tweet) {
             final boolean favorite = tweet.didFavorite() == false;
-            new AsyncTaskWithProgress<Void, Void, Void>(MainActivity.this, favorite
+            new AsyncTaskWithProgress<Void>(MainActivity.this, favorite
                 ? R.string.favorite_remove_progress_msg : R.string.favorite_add_progress_msg) {
 
                 @Override
                 protected Void doInBackground(Void... params) {
-                    TwitterApiClient.TwitterService service = App.getInstance().getApiClient().getService();
                     if(favorite) {
-                        service.favorite(tweet.getId());
+                        twitterService.favorite(tweet.getId());
                     } else {
-                        service.removeFavorite(tweet.getId());
+                        twitterService.removeFavorite(tweet.getId());
                     }
                     tweet.setFavorited(favorite);
                     return null;
@@ -162,11 +163,11 @@ public class MainActivity extends BaseActivity {
             if(tweet.isRetweeted()) {
                 return;
             }
-            new AsyncTaskWithProgress<Void, Void, Void>(MainActivity.this, R.string.re_tweet_progress_msg) {
+            new AsyncTaskWithProgress<Void>(MainActivity.this, R.string.re_tweet_progress_msg) {
 
                 @Override
                 protected Void doInBackground(Void... params) {
-                    App.getInstance().getApiClient().getService().retweet(tweet.getId());
+                    twitterService.retweet(tweet.getId());
                     tweet.setRetweeted(true);
                     return null;
                 }

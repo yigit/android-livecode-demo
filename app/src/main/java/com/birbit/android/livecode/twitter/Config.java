@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Config {
     public static final String API_BASE = "https://api.twitter.com/1.1";
-    public static final long ARTIFICIAL_REQUEST_DELAY = TimeUnit.SECONDS.toMillis(0);//MS
+    public static final long ARTIFICIAL_REQUEST_DELAY = TimeUnit.SECONDS.toMillis(1);//MS
     public static final boolean ENABLE_STRICT_MODE = true;
     public static final ConnectionConfiguration CONNECTION_CONFIGURATION = ConnectionConfiguration.JOBQUEUE_TEST_APP;
 
