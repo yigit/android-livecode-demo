@@ -76,11 +76,16 @@ public class TwitterApiClient {
     }
 
     public interface TwitterService {
+
+
         @GET("/statuses/home_timeline.json")
         public List<Tweet> homeTimeline(@Query("since_id") String sinceId);
         @FormUrlEncoded
         @POST("/statuses/update.json")
         public Tweet postStatus(@Field("status") String status);
+        @FormUrlEncoded
+        @POST("/statuses/update.json")
+        public Tweet postStatus(@Field("status") String status, @retrofit.http.Header(CUSTOM_NONCE) String customNonce);
         @GET("/direct_messages.json")
         public List<DM> getReceivedDMs(@Field("count") int limit);
         @GET("/direct_messages.json")
@@ -95,11 +100,22 @@ public class TwitterApiClient {
         public Tweet removeFavorite(@Field("id") String tweetId);
     }
 
+    final static String CUSTOM_NONCE = "custom_nonce_field";
     private static class WrapperClient implements Client {
         OkClient okClient = new OkClient();
         WrapperClient() {
 
         }
+
+        public String getNonce(Request request) {
+            for(Header header : request.getHeaders()) {
+                if(CUSTOM_NONCE.equals(header.getName())) {
+                    return header.getValue();
+                }
+            }
+            return UUID.randomUUID().toString();
+        }
+
         @Override
         public Response execute(Request request) throws IOException {
             if(Config.ARTIFICIAL_REQUEST_DELAY > 0) {
@@ -113,8 +129,7 @@ public class TwitterApiClient {
             Map<String, String> headers = new HashMap<String, String>();
             headers.put("oauth_consumer_key", Config.CONNECTION_CONFIGURATION.consumerKey);
             //TODO create proper nonce
-
-            headers.put("oauth_nonce", UUID.randomUUID().toString());
+            headers.put("oauth_nonce", getNonce(request));
             headers.put("oauth_signature_method", "HMAC-SHA1");
             headers.put("oauth_timestamp", Long.toString(System.currentTimeMillis() / 1000));
             headers.put("oauth_token", Config.CONNECTION_CONFIGURATION.accessToken);
@@ -207,7 +222,7 @@ public class TwitterApiClient {
         }
 
         private static String percentEncode(String val) throws UnsupportedEncodingException {
-            return Uri.encode(val, "UTF-8");
+            return net.oauth.OAuth.percentEncode(val);
         }
     }
 }
