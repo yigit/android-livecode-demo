@@ -1,25 +1,22 @@
 package com.birbit.android.livecode.twitter.business;
 
+import com.google.gson.Gson;
+
 import android.net.Uri;
 import android.util.Base64;
-import android.util.Log;
 
 import com.birbit.android.livecode.twitter.Config;
 import com.birbit.android.livecode.twitter.business.exceptions.TwitterApiException;
 import com.birbit.android.livecode.twitter.util.L;
 import com.birbit.android.livecode.twitter.vo.DM;
 import com.birbit.android.livecode.twitter.vo.Tweet;
-import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +27,6 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import retrofit.ErrorHandler;
-import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Client;
@@ -44,6 +40,7 @@ import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
+import retrofit.http.Query;
 import retrofit.mime.TypedByteArray;
 import retrofit.mime.TypedOutput;
 
@@ -81,9 +78,13 @@ public class TwitterApiClient {
         @POST("/statuses/update.json")
         public Tweet postStatus(@Field("status") String status);
         @GET("/direct_messages.json")
-        public List<DM> getReceivedDMs(@Field("count") int limit);
+        public List<DM> getReceivedDMs(@Query("count") int limit);
         @GET("/direct_messages.json")
-        public List<DM> getReceivedDMs(@Field("since_id") String sinceId, @Field("count") int limit);
+        public List<DM> getReceivedDMs(@Query("since_id") String sinceId, @Query("count") int limit);
+        @GET("/direct_messages/sent.json")
+        public List<DM> getSentDMs(@Query("count") int limit);
+        @GET("/direct_messages/sent.json")
+        public List<DM> getSentDMs(@Query("since_id") String sinceId, @Query("count") int limit);
         @POST("/statuses/retweet/{id}.json")
         public Tweet retweet(@Path("id") String tweetId);
         @FormUrlEncoded
@@ -157,7 +158,8 @@ public class TwitterApiClient {
                 signatureBuilder.append(entry.getValue());
             }
             String finalSignatureBase = request.getMethod().toUpperCase() + "&" +
-                    percentEncode(request.getUrl()) + "&" + percentEncode(signatureBuilder.toString());
+                   percentEncode(uri.getScheme() + "://" + uri.getHost() + uri.getPath())
+                   + "&" + percentEncode(signatureBuilder.toString());
             String signingKey = percentEncode(Config.CONNECTION_CONFIGURATION.consumerSecret)
                     + "&" + percentEncode(Config.CONNECTION_CONFIGURATION.accessTokenSecret);
 

@@ -1,10 +1,11 @@
 package com.birbit.android.livecode.twitter.vo;
 
-import com.birbit.android.livecode.twitter.util.L;
 import com.google.gson.annotations.SerializedName;
 
-import java.text.DateFormat;
+import com.birbit.android.livecode.twitter.util.L;
+
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -20,6 +21,8 @@ public class DM {
     private String createdAt;
     private Date createdDate;
 
+    private transient SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZZ yyyy");
+
     public String getId() {
         return id;
     }
@@ -27,7 +30,7 @@ public class DM {
     public Date getCreatedDate() {
         if(createdDate == null && createdAt != null) {
             try {
-                createdDate = DateFormat.getInstance().parse(createdAt);
+                createdDate = dateFormat.parse(createdAt);
             } catch (ParseException e) {
                 L.e(e, "error while parsing date %s", createdAt);
             }

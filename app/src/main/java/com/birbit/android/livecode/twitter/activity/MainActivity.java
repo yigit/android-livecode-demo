@@ -1,8 +1,10 @@
 package com.birbit.android.livecode.twitter.activity;
 
 import android.app.AlertDialog;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -12,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.birbit.android.livecode.twitter.App;
 import com.birbit.android.livecode.twitter.R;
 import com.birbit.android.livecode.twitter.business.TwitterApiClient;
 import com.birbit.android.livecode.twitter.util.AsyncTaskWithProgress;
@@ -35,6 +36,23 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         initUI();
         loadTweets();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.dm_list) {
+            Intent dmIntent = new Intent(this, DMListActivity.class);
+            startActivity(dmIntent);
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     private void initUI() {
