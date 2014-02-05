@@ -160,7 +160,7 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public long getItemId(int position) {
-            return getItem(position).getLongId();
+            return position;
         }
 
         @Override

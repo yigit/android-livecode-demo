@@ -31,12 +31,8 @@ public class Tweet extends TweetBase  implements com.birbit.android.livecode.twi
     public Tweet() {
     }
 
-    public Tweet(Long longId) {
-        super(longId);
-    }
-
-    public Tweet(Long longId, String id, Boolean retweeted, String text, java.util.Date createdAt, String userId, Boolean favorited) {
-        super(longId, id, retweeted, text, createdAt, userId, favorited);
+    public Tweet(String id, Boolean retweeted, String text, java.util.Date createdAt, String userId, Boolean favorited) {
+        super(id, retweeted, text, createdAt, userId, favorited);
     }
 
     // KEEP METHODS - put your custom methods here
