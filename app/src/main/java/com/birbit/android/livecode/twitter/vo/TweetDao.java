@@ -14,7 +14,7 @@ import com.birbit.android.livecode.twitter.vo.Tweet;
 /**
  * DAO for table TWEET.
 */
-public class TweetDao extends AbstractDao<Tweet, Void> {
+public class TweetDao extends AbstractDao<Tweet, String> {
 
     public static final String TABLENAME = "TWEET";
 
@@ -23,7 +23,7 @@ public class TweetDao extends AbstractDao<Tweet, Void> {
      * Can be used for QueryBuilder and for referencing column names.
     */
     public static class Properties {
-        public final static Property Id =new Property(0, String.class , "id", false, "id_str");
+        public final static Property Id =new Property(0, String.class , "id", true, "id_str");
         public final static Property Retweeted =new Property(1, Boolean.class , "retweeted", false, "RETWEETED");
         public final static Property Text =new Property(2, String.class , "text", false, "TEXT");
         public final static Property CreatedAt =new Property(3, java.util.Date.class , "createdAt", false, "CREATED_AT");
@@ -44,7 +44,7 @@ public class TweetDao extends AbstractDao<Tweet, Void> {
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'TWEET' (" + //
-                "'id_str' TEXT," + // 0: id
+                "'id_str' TEXT PRIMARY KEY NOT NULL ," + // 0: id
                 "'RETWEETED' INTEGER," + // 1: retweeted
                 "'TEXT' TEXT," + // 2: text
                 "'CREATED_AT' INTEGER," + // 3: createdAt
@@ -103,8 +103,8 @@ public class TweetDao extends AbstractDao<Tweet, Void> {
 
     /** @inheritdoc */
     @Override
-    public Void readKey(Cursor cursor, int offset) {
-        return null;
+    public String readKey(Cursor cursor, int offset) {
+        return cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0);
     }
 
     /** @inheritdoc */
@@ -135,15 +135,18 @@ public class TweetDao extends AbstractDao<Tweet, Void> {
 
     /** @inheritdoc */
     @Override
-    protected Void updateKeyAfterInsert(Tweet entity, long rowId) {
-        // Unsupported or missing PK type
-        return null;
+    protected String updateKeyAfterInsert(Tweet entity, long rowId) {
+        return entity.getId();
     }
 
     /** @inheritdoc */
     @Override
-    public Void getKey(Tweet entity) {
-        return null;
+    public String getKey(Tweet entity) {
+        if(entity != null) {
+            return entity.getId();
+        } else {
+            return null;
+        }
     }
 
     /** @inheritdoc */

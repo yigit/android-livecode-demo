@@ -32,6 +32,10 @@ abstract public class TweetBase implements com.birbit.android.livecode.twitter.v
     public TweetBase() {
     }
 
+    public TweetBase(String id) {
+        this.id = id;
+    }
+
     public TweetBase(String id, Boolean retweeted, String text, java.util.Date createdAt, String userId, Boolean favorited) {
         this.id = id;
         this.retweeted = retweeted;
