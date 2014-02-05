@@ -49,7 +49,7 @@ public class TwitterDaoGenerator extends DaoGenerator {
     private static void addTweet(Schema schema) {
         Entity tweet = schema.addEntity("Tweet");
         tweet.implementsInterface("com.birbit.android.livecode.twitter.vo.CachesUIData");
-        tweet.addStringProperty("id").columnName("id_str").addFieldAnnotation(new SerializedName("id_str"));
+        tweet.addStringProperty("id").columnName("id_str").primaryKey().addFieldAnnotation(new SerializedName("id_str"));
         tweet.addBooleanProperty("retweeted").addFieldAnnotation(new SerializedName("retweeted"));
         tweet.addStringProperty("text");
         tweet.addDateProperty("createdAt");
