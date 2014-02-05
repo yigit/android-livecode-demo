@@ -12,6 +12,7 @@ public class Config {
     public static final long ARTIFICIAL_REQUEST_DELAY = TimeUnit.SECONDS.toMillis(1);//MS
     public static final boolean ENABLE_STRICT_MODE = true;
     public static final ConnectionConfiguration CONNECTION_CONFIGURATION = ConnectionConfiguration.LIVECODE_DEMO_1;
+    public static final String USER_ID = "1443060589";
 
     public static enum ConnectionConfiguration {
         JOBQUEUE_TEST_APP("GfonALJ3wScsJfPsjLpl5g", "7EYvqptQeBQ9FFcbaPHv0WVe9rRbDi8dmX9DffIMIE",
