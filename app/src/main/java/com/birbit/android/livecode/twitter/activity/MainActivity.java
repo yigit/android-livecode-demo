@@ -178,7 +178,7 @@ public class MainActivity extends BaseActivity {
         @Override
         public void onFavorite(final Tweet tweet) {
             final boolean favorite = tweet.didFavorite() == false;
-            new AsyncTaskWithProgress<Void>(MainActivity.this, favorite
+            new AsyncTaskWithProgress<Void>(MainActivity.this, tweet.didFavorite()
                 ? R.string.favorite_remove_progress_msg : R.string.favorite_add_progress_msg) {
 
                 @Override
@@ -246,14 +246,14 @@ public class MainActivity extends BaseActivity {
         public View render(Tweet tweet) {
             lastTweet = tweet;
             textView.setText(tweet.getUiSpanned());
-            if(tweet.isLocal()) {
-
-            } else {
-                retweetButton.setImageResource(
-                        tweet.isRetweeted() ? R.drawable.retweet : R.drawable.retweet_black);
-                favoriteButton.setImageResource(
-                        tweet.didFavorite() ? R.drawable.favorite_full : R.drawable.favorite_black);
-            }
+            boolean canRetweet = tweet.isMine() ? false : !tweet.isLocal();
+            retweetButton.setVisibility(canRetweet ? View.VISIBLE : View.GONE);
+            favoriteButton.setVisibility(tweet.isLocal() ? View.GONE : View.VISIBLE);
+            retweetButton.setAlpha(tweet.isMine() ? .5f : 1f);
+            retweetButton.setImageResource(
+                    tweet.isRetweeted() ? R.drawable.retweet : R.drawable.retweet_black);
+            favoriteButton.setImageResource(
+                    tweet.didFavorite() ? R.drawable.favorite_full : R.drawable.favorite_black);
             return root;
         }
 

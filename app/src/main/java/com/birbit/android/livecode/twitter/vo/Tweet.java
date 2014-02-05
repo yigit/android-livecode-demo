@@ -10,6 +10,7 @@ import android.text.Html;
 import android.text.Spanned;
 
 import com.birbit.android.livecode.twitter.App;
+import com.birbit.android.livecode.twitter.Config;
 import com.birbit.android.livecode.twitter.model.UserModel;
 import com.birbit.android.livecode.twitter.util.DateUtil;
 import com.google.gson.annotations.SerializedName;
@@ -99,6 +100,10 @@ public class Tweet extends TweetBase  implements com.birbit.android.livecode.twi
 
     public boolean isLocal() {
         return isLocalId(id);
+    }
+
+    public boolean isMine() {
+        return Config.USER_ID.equals(userId);
     }
     // KEEP METHODS END
 
