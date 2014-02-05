@@ -19,7 +19,7 @@ public class TwitterDaoGenerator extends DaoGenerator {
     }
 
     public static void main(String[] args) {
-        Schema schema = new Schema(2, "com.birbit.android.livecode.twitter.vo");
+        Schema schema = new Schema(3, "com.birbit.android.livecode.twitter.vo");
         schema.setDefaultJavaPackageTest("com.birbit.android.livecode.twitter.test.vo");
         schema.setDefaultJavaPackageDao("com.birbit.android.livecode.twitter.vo");
         schema.enableKeepSectionsByDefault();
@@ -49,7 +49,8 @@ public class TwitterDaoGenerator extends DaoGenerator {
     private static void addTweet(Schema schema) {
         Entity tweet = schema.addEntity("Tweet");
         tweet.implementsInterface("com.birbit.android.livecode.twitter.vo.CachesUIData");
-        tweet.addStringProperty("id").columnName("id_str").primaryKey().addFieldAnnotation(new SerializedName("id_str"));
+        tweet.addLongProperty("localId").primaryKey().autoincrement();
+        tweet.addStringProperty("id").columnName("id_str").unique().addFieldAnnotation(new SerializedName("id_str"));
         tweet.addBooleanProperty("retweeted").addFieldAnnotation(new SerializedName("retweeted"));
         tweet.addStringProperty("text");
         tweet.addDateProperty("createdAt");
