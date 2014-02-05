@@ -24,6 +24,7 @@ android {
         compile 'com.squareup.okhttp:okhttp:1.3.0'
         compile 'com.squareup.dagger:dagger:1.2.0'
         compile 'com.squareup.dagger:dagger-compiler:1.2.0'
+        compile 'net.oauth.core:oauth:20100527'
     }
 
     buildTypes {
