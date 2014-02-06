@@ -13,12 +13,18 @@ import android.widget.TextView;
 
 import com.birbit.android.livecode.twitter.R;
 import com.birbit.android.livecode.twitter.business.TwitterApiClient;
+import com.birbit.android.livecode.twitter.events.DeletedTweetEvent;
+import com.birbit.android.livecode.twitter.events.NewTweetsEvent;
+import com.birbit.android.livecode.twitter.events.UpdatedTweetEvent;
+import com.birbit.android.livecode.twitter.job.FetchTweetsJob;
+import com.birbit.android.livecode.twitter.job.SendTweetJob;
 import com.birbit.android.livecode.twitter.model.TweetModel;
 import com.birbit.android.livecode.twitter.model.UserModel;
 import com.birbit.android.livecode.twitter.util.AsyncTaskWithProgress;
 import com.birbit.android.livecode.twitter.util.ModelUtils;
 import com.birbit.android.livecode.twitter.vo.Tweet;
 import com.birbit.android.livecode.twitter.vo.User;
+import com.path.android.jobqueue.JobManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +40,7 @@ public class MainActivity extends BaseActivity {
     @Inject TwitterApiClient.TwitterService twitterService;
     @Inject TweetModel tweetModel;
     @Inject UserModel userModel;
+    @Inject JobManager jobManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +60,18 @@ public class MainActivity extends BaseActivity {
     private void initUI() {
         tweetList = ((ListView) findViewById(R.id.tweet_list));
         findViewById(R.id.send_tweet_button).setOnClickListener(onSendTweetClick);
+    }
+
+    public void onEventMainThread(NewTweetsEvent ignored) {
+        reloadTweets();
+    }
+
+    public void onEventMainThread(UpdatedTweetEvent ignored) {
+        reloadTweets();
+    }
+
+    public void onEventMainThread(DeletedTweetEvent ignored) {
+        reloadTweets();
     }
 
     private View.OnClickListener onSendTweetClick = new View.OnClickListener() {
@@ -75,43 +94,11 @@ public class MainActivity extends BaseActivity {
     };
 
     private void sendTweet(final String trimmed) {
-        new AsyncTaskWithProgress<Void>(this, R.string.post_tweet_progress_msg) {
-            @Override
-            protected Void safeDoInBackground(Void... params) {
-                Tweet tweet = twitterService.postStatus(trimmed);
-                tweetModel.saveTweet(tweet);
-                return null;
-            }
-
-            @Override
-            protected void safeOnPostExecute(Void res) {
-                //reload tweet
-                reloadTweets();
-            }
-        }.execute();
+        jobManager.addJobInBackground(new SendTweetJob(trimmed));
     }
 
     private void fetchTweets() {
-        new AsyncTaskWithProgress<Void>(this, null) {
-            @Override
-            protected Void safeDoInBackground(Void... params) {
-                //get top tweet
-                Tweet topTweeet = tweetModel.firstHomeTweet();
-                List<Tweet> tweets = twitterService.homeTimeline(topTweeet == null ? null : topTweeet.getId());
-                Map<String, User> users = new HashMap<String, User>();
-                for(Tweet tweet : tweets) {
-                    users.put(tweet.getUser().getId(), tweet.getUser());
-                }
-                tweetModel.saveTweets(tweets);
-                userModel.saveUsers(users.values());
-                return null;
-            }
-
-            @Override
-            protected void safeOnPostExecute(Void aVoid) {
-                reloadTweets();
-            }
-        }.execute();
+        jobManager.addJob(new FetchTweetsJob());
     }
 
     private void reloadTweets() {
@@ -242,6 +229,10 @@ public class MainActivity extends BaseActivity {
         public View render(Tweet tweet) {
             lastTweet = tweet;
             textView.setText(tweet.getUiSpanned());
+            boolean canRetweet = tweet.isMine() ? false : !tweet.isLocal();
+            retweetButton.setVisibility(canRetweet ? View.VISIBLE : View.GONE);
+            favoriteButton.setVisibility(tweet.isLocal() ? View.GONE : View.VISIBLE);
+            retweetButton.setAlpha(tweet.isMine() ? .5f : 1f);
             retweetButton.setImageResource(
                     tweet.isRetweeted() ? R.drawable.retweet : R.drawable.retweet_black);
             favoriteButton.setImageResource(
