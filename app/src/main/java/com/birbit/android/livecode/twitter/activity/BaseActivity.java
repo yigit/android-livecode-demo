@@ -7,12 +7,18 @@ import com.birbit.android.livecode.twitter.App;
 
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import javax.inject.Inject;
+
+import de.greenrobot.event.EventBus;
+
 /**
  * Created by yigit on 2/2/14.
  */
 public class BaseActivity extends Activity implements LifecycleProvider {
     private State state;
     private CopyOnWriteArraySet<LifecycleListener> lifecycleListeners;
+
+    @Inject EventBus eventBus;
 
     public BaseActivity() {
         lifecycleListeners = new CopyOnWriteArraySet<LifecycleListener>();
@@ -33,6 +39,9 @@ public class BaseActivity extends Activity implements LifecycleProvider {
         for(LifecycleListener lifecycleListener : lifecycleListeners) {
             lifecycleListener.onStart();
         }
+        try {
+            eventBus.register(this);
+        } catch (Throwable t){}
     }
 
     @Override
@@ -54,6 +63,9 @@ public class BaseActivity extends Activity implements LifecycleProvider {
         for(LifecycleListener lifecycleListener : lifecycleListeners) {
             lifecycleListener.onStop();
         }
+        try {
+            eventBus.unregister(this);
+        } catch (Throwable t){}
     }
 
     @Override

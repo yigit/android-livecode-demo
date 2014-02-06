@@ -10,6 +10,7 @@ import android.text.Html;
 import android.text.Spanned;
 
 import com.birbit.android.livecode.twitter.App;
+import com.birbit.android.livecode.twitter.Config;
 import com.birbit.android.livecode.twitter.model.UserModel;
 import com.birbit.android.livecode.twitter.util.DateUtil;
 import com.google.gson.annotations.SerializedName;
@@ -23,6 +24,7 @@ import java.text.SimpleDateFormat;
  */
 public class Tweet extends TweetBase  implements com.birbit.android.livecode.twitter.vo.CachesUIData {
     // KEEP FIELDS - put your custom fields here
+    public static final String LOCAL_ID_PREFIX = "local_";
     @SerializedName("created_at")
     private String createdAtString;
     private Spanned uiSpanned;
@@ -86,6 +88,22 @@ public class Tweet extends TweetBase  implements com.birbit.android.livecode.twi
     public void cacheUIData(Context context) {
         getUser();
         getUiSpanned();
+    }
+
+    public static String createLocalId(String identifier) {
+        return LOCAL_ID_PREFIX + identifier;
+    }
+
+    public static boolean isLocalId(String id) {
+        return id.startsWith(LOCAL_ID_PREFIX);
+    }
+
+    public boolean isLocal() {
+        return isLocalId(id);
+    }
+
+    public boolean isMine() {
+        return Config.USER_ID.equals(userId);
     }
     // KEEP METHODS END
 
