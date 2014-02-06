@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat;
  */
 public class Tweet extends TweetBase  implements com.birbit.android.livecode.twitter.vo.CachesUIData {
     // KEEP FIELDS - put your custom fields here
-    private static final String LOCAL_ID_PREFIX = "local_";
+    public static final String LOCAL_ID_PREFIX = "local_";
     @SerializedName("created_at")
     private String createdAtString;
     private Spanned uiSpanned;

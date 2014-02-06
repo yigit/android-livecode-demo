@@ -37,9 +37,12 @@ public class TweetModel {
         homeTweetsQuery = tweetDao.queryBuilder().orderDesc(
                 TweetDao.Properties.CreatedAt
         ).build();
-        topTweetQuery = tweetDao.queryBuilder().orderDesc(
-                TweetDao.Properties.CreatedAt
-        ).limit(1).build();
+        topTweetQuery = tweetDao.queryBuilder()
+                .where(
+                    TweetDao.Properties.Id.notLike(Tweet.LOCAL_ID_PREFIX + "%")
+                ).orderDesc(
+                        TweetDao.Properties.CreatedAt
+                ).limit(1).build();
         deleteByStringId = tweetDao.queryBuilder().where(
                 TweetDao.Properties.Id.eq("x")
         ).buildDelete();

@@ -105,7 +105,6 @@ abstract public class AsyncTaskWithProgress<Result> extends AsyncTask<Void, Void
 
     private void cleanup() {
         if(lifecycleProvider != null) {
-            L.d("cleaning up async task %s", getClass().getName());
             lifecycleProvider.unregister(this);
             lifecycleProvider = null;
         }

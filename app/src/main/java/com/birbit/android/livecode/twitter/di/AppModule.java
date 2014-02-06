@@ -7,6 +7,7 @@ import com.birbit.android.livecode.twitter.App;
 import com.birbit.android.livecode.twitter.activity.MainActivity;
 import com.birbit.android.livecode.twitter.business.TwitterApiClient;
 import com.birbit.android.livecode.twitter.db.DbHelper;
+import com.birbit.android.livecode.twitter.job.FetchTweetsJob;
 import com.birbit.android.livecode.twitter.job.MyJobManager;
 import com.birbit.android.livecode.twitter.job.SendTweetJob;
 import com.birbit.android.livecode.twitter.model.TweetModel;
@@ -34,7 +35,8 @@ import dagger.Provides;
                 TweetModel.class,
                 UserModel.class,
                 EventBus.class,
-                SendTweetJob.class
+                SendTweetJob.class,
+                FetchTweetsJob.class
         }
 )
 public class AppModule {

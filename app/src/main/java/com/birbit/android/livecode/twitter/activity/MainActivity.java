@@ -16,6 +16,7 @@ import com.birbit.android.livecode.twitter.business.TwitterApiClient;
 import com.birbit.android.livecode.twitter.event.DeletedTweetEvent;
 import com.birbit.android.livecode.twitter.event.NewTweetEvent;
 import com.birbit.android.livecode.twitter.event.UpdatedTweetEvent;
+import com.birbit.android.livecode.twitter.job.FetchTweetsJob;
 import com.birbit.android.livecode.twitter.job.SendTweetJob;
 import com.birbit.android.livecode.twitter.model.TweetModel;
 import com.birbit.android.livecode.twitter.model.UserModel;
@@ -92,30 +93,11 @@ public class MainActivity extends BaseActivity {
     };
 
     private void sendTweet(final String trimmed) {
-        jobManager.addJob(new SendTweetJob(trimmed));
+        jobManager.addJobInBackground(new SendTweetJob(trimmed));
     }
 
     private void fetchTweets() {
-        new AsyncTaskWithProgress<Void>(this, null) {
-            @Override
-            protected Void safeDoInBackground(Void... params) {
-                //get top tweet
-                Tweet topTweeet = tweetModel.firstHomeTweet();
-                List<Tweet> tweets = twitterService.homeTimeline(topTweeet == null ? null : topTweeet.getId());
-                Map<String, User> users = new HashMap<String, User>();
-                for(Tweet tweet : tweets) {
-                    users.put(tweet.getUser().getId(), tweet.getUser());
-                }
-                tweetModel.saveTweets(tweets);
-                userModel.saveUsers(users.values());
-                return null;
-            }
-
-            @Override
-            protected void safeOnPostExecute(Void aVoid) {
-                reloadTweets();
-            }
-        }.execute();
+        jobManager.addJob(new FetchTweetsJob());
     }
 
     private void reloadTweets() {

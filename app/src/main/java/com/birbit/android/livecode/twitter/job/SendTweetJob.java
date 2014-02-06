@@ -2,6 +2,7 @@ package com.birbit.android.livecode.twitter.job;
 
 import com.birbit.android.livecode.twitter.Config;
 import com.birbit.android.livecode.twitter.business.TwitterApiClient;
+import com.birbit.android.livecode.twitter.business.exceptions.TwitterApiException;
 import com.birbit.android.livecode.twitter.event.DeletedTweetEvent;
 import com.birbit.android.livecode.twitter.event.NewTweetEvent;
 import com.birbit.android.livecode.twitter.event.UpdatedTweetEvent;
@@ -78,7 +79,10 @@ public class SendTweetJob extends Job {
 
     @Override
     protected boolean shouldReRunOnThrowable(Throwable throwable) {
-        //TODO handle this case.
-        return false;
+        if(throwable instanceof TwitterApiException) {
+            return ((TwitterApiException) throwable).canRetry();
+        }
+        //unknown error ?
+        return true;
     }
 }
